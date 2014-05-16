@@ -51,7 +51,39 @@ class csvContainer:
     
     self.f.seek(stpos)
     errfile.close()
+
+
+  def aggregate(self, x, groupby, fun):
+    """ Apply function fun to variable' x grouping by groupby. x and groupby are variable names and fun is a function possibly 
+    a lambda like lambda a, b: a+b. The function is computed incrementally where a is the accumulated value and b is the new value. """
+
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+    
+    grby  = {}
+    idx_x = self.hea[x]
+    idx_g = self.hea[groupby]
+    
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
       
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol:
+        x = row[idx_x].strip(' ')
+        g = row[idx_g].strip(' ')
+        
+        if g in grby:
+          x = fun(grby[g], float(x))
+          
+        grby[g] = float(x)
+      
+      li = self.f.readline()
+    
+    self.f.seek(stpos)
+
+    return(grby)       
       
 ## end of csvContainer      
     
