@@ -7,6 +7,10 @@
 # implementation works good enough for the moment, I will not optimize this function now. Furthermore, it is possible to parallelize
 # the count by using Spark (see below). Counting in Spark is straightforward.
 
+boofn = "/home/jacques/flights/bookings.csv"
+seafn = "/home/jacques/flights/searches.csv"
+
+
 def countlines (fname):
   """This counts the number of lines in a file the simplest way. 
   Caveat: The buffer (one line at a time) is probably too small to be efficient. """
