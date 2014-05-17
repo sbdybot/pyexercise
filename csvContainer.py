@@ -83,7 +83,103 @@ class csvContainer:
     
     self.f.seek(stpos)
 
+    return(grby)
+
+    
+  def join_step1(self):
+    """ ... ... """
+
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+    
+    grby  = {}
+    idx_1 = self.hea['Origin']
+    idx_2 = self.hea['Destination']
+    idx_3 = self.hea['Seg1Date']
+    
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
+      
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol:
+        g = (row[idx_1].strip(' '), row[idx_2].strip(' '), row[idx_3].strip(' '))
+        
+        if g in grby:
+          x = grby[g] + 1
+        else:
+          x = 1
+          
+        grby[g] = x
+      
+      li = self.f.readline()
+    
+    self.f.seek(stpos)
+
     return(grby)       
+    
+
+  def join_step2_search(self, filtr):
+    """ ... ... """
+
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+
+    ofile = open(self.fnam + '.filter.csv', 'w')
+    
+    idx_1 = self.hea['Origin']
+    idx_2 = self.hea['Destination']
+    idx_3 = self.hea['Seg1Date']
+    
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
+      
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol:
+        g = (row[idx_1].strip(' '), row[idx_2].strip(' '), row[idx_3].strip(' '))
+        
+        if g in filtr:
+          ofile.write(li)
+      
+      li = self.f.readline()
+    
+    self.f.seek(stpos)       
+    ofile.close()
+
+    
+  def join_step2_book(self, filtr):
+    """ ... ... """
+
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+
+    ofile = open(self.fnam + '.filter.csv', 'w')
+    
+    idx_1 = self.hea['dep_port']
+    idx_2 = self.hea['arr_port']
+    idx_3 = self.hea['brd_time']
+    
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
+      
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol:
+        g = (row[idx_1].strip(' '), row[idx_2].strip(' '), row[idx_3].strip(' ')[:10])
+        
+        if g in filtr:
+          ofile.write(li)
+      
+      li = self.f.readline()
+    
+    self.f.seek(stpos)       
+    ofile.close()
+
+    
       
 ## end of csvContainer      
     
