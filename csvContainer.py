@@ -9,15 +9,22 @@ class csvContainer:
   hea  = None    # The header as a dictionary converting names into column numbers
   fnam = None    # The file name. For creating realted names for audit()
   auto = False   # Automatically convert comma separated files when ^-separated fails
+  prts = None    # GeoBases aiports object. If == None, gracefully reject the search
 
   
   def __init__(self, fnam, auto = False):
-    """ Open the file and read the header """
+    """ Open the file and read the header, also try to load a GeoBases airport object and gracefully handle installation issues. """
     
     self.fnam = fnam
     self.auto = auto
     self.f    = open(fnam)
     
+    try:
+      from GeoBases import GeoBase
+      self.prts = GeoBase(data = 'airports', verbose = False)
+    except ImportError:
+      pass
+
     li = self.f.readline()
     ky = [i.strip(' ') for i in li.rstrip('\n').split('^')]
     
@@ -51,6 +58,18 @@ class csvContainer:
     
     self.f.seek(stpos)
     errfile.close()
+    
+    
+  def niceAirportDescription (self, iatacode):
+    """ Returns a string with a nicec description of airport iatacode if GeoBases is available """
+    
+    if self.prts is None:
+      return('** GeoBases is not installed. **')
+      
+    dd = self.prts.get(iatacode)
+    
+    return(dd['iata_code'] + ': ' + dd['name'] + ', ' + dd['city_code'] + ', ' + dd['country_name'])
+    
 
 
   def aggregate(self, x, groupby, fun):
@@ -85,9 +104,13 @@ class csvContainer:
 
     return(grby)
 
+
+#S a n d b o x  functions: These functions do not make part of the "neat" object but are kept to understand what was done.
+#-------------------------
     
   def join_step1(self):
-    """ ... ... """
+    """ This function was only implemented for researching the datafiles. it is NOT generale purpose but includes file specifics.
+        See the document OnJoiningSearchesWithBookings.txt for an explanation. """
 
     numcol = len(self.hea)
     stpos  = self.f.tell()
@@ -121,7 +144,8 @@ class csvContainer:
     
 
   def join_step2_search(self, filtr):
-    """ ... ... """
+    """ This function was only implemented for researching the datafiles. it is NOT generale purpose but includes file specifics.
+        See the document OnJoiningSearchesWithBookings.txt for an explanation. """
 
     numcol = len(self.hea)
     stpos  = self.f.tell()
@@ -151,7 +175,8 @@ class csvContainer:
 
     
   def join_step2_book(self, filtr):
-    """ ... ... """
+    """ This function was only implemented for researching the datafiles. it is NOT generale purpose but includes file specifics.
+        See the document OnJoiningSearchesWithBookings.txt for an explanation. """
 
     numcol = len(self.hea)
     stpos  = self.f.tell()
@@ -178,7 +203,6 @@ class csvContainer:
     
     self.f.seek(stpos)       
     ofile.close()
-
     
       
 ## end of csvContainer      
