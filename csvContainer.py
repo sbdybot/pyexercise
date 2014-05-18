@@ -125,6 +125,42 @@ class csvContainer:
     self.f.seek(stpos)
 
     return(grby)
+    
+
+  def writeSubset(self, vname, rexp, outfi):
+    """ Writes all lines to a file where variable vname matches the regular expression rexp to a new file outfi """
+
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+    
+    ofile    = open(outfi, 'w')
+    colnames = sorted(self.hea, key = self.hea.get)
+    li       = '^'.join(colnames) + '\n'
+    ofile.write(li)
+    
+    import re
+    
+    rex = re.compile(rexp)
+    idx = self.hea[vname]
+    
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
+      
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol:
+        x = row[idx].strip(' ')
+        
+        if rex.match(x) is not None:
+          ofile.write(li)
+            
+      li = self.f.readline()
+    
+    self.f.seek(stpos)
+    ofile.close()
+    
+   
 
 
 #S a n d b o x  functions: These functions do not make part of the "neat" object but are kept to understand what was done.
