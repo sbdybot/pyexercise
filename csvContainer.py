@@ -127,6 +127,39 @@ class csvContainer:
     return(grby)
     
 
+  def groupby(self, vnames, numchars):
+    """ Group by all variables in vnames and count the number of rows. Take only the first numchars characters of each vname's value. """
+
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+    
+    grby  = {}
+    idx   = tuple([self.hea[i] for i in vnames])
+    n     = len(vnames)
+    
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
+      
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol:
+        g = tuple([row[idx[i]].strip(' ')[:numchars[i]] for i in range(n)])
+        
+        if g in grby:
+          x = grby[g] + 1
+        else:
+          x = 1
+          
+        grby[g] = x
+      
+      li = self.f.readline()
+    
+    self.f.seek(stpos)
+
+    return(grby)
+    
+
   def writeSubset(self, vname, rexp, outfi):
     """ Writes all lines to a file where variable vname matches the regular expression rexp to a new file outfi """
 
