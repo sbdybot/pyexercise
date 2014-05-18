@@ -1,0 +1,99 @@
+Explanation of what was done to join searches with bookings
+-----------------------------------------------------------
+
+After exploring both files, I decide that the initial variables I want to match in both files are:
+
+	origin airport, destination airport, day (without time)
+	
+I also check the maximum and minimum dates in the files with:
+
+>>> boo = csvContainer(boofn)
+>>> res = boo.aggregate('pax', 'brd_time', lambda a, b: a + b)
+>>> len(res)
+167848
+>>> st = sorted(res)
+>>> len(st)
+167848
+>>> st[0]
+'2012-03-02 12:15:00'
+>>> st[-1]
+'2014-12-20 13:35:00'
+
+>>> sea = csvContainer(seafn)
+>>> res = sea.aggregate('RoundTrip', 'Seg1Date', lambda a, b: a + b)
+>>> len(res)
+717
+>>> st = sorted(res)
+>>> len(st)
+717
+>>> st[0]
+''
+>>> st[1]
+'2013-01-01'
+>>> st[-1]
+'2014-12-22'
+
+	
+Once I can find the matches, I want to write down the bookings dataset rows in one file and the search dataset rows in another for selected flights. Later I will decide what else I can do for joining.
+
+I first build all combinations of (origin, destination, day) in the searches file with: sea.join_step1()
+
+Now comes the first problem. Most combinations of (origin, destination, day) are not matched in the bookings file. I debug the code in Spyder to verify that it is working as expected.
+
+E.g., none of the top10 combinations:
+
+ ('NCE', 'LGW', '2014-06-28'),
+ ('NCE', 'LGW', '2013-06-28'),
+ ('FRA', 'NYC', ''),
+ ('STO', 'LON', '2013-12-09'),
+ ('BSB', 'POA', '2013-07-06'),
+ ('FRA', 'BKK', '2013-12-20'),
+ ('STO', 'OSL', '2013-08-10'),
+ ('RUH', 'JED', '2013-01-16'),
+ ('AHB', 'RUH', '2013-08-12'),
+ ('MUC', 'LON', '2013-05-25')]
+
+are found in the bookings file
+
+Another problem in the searches file is: All searches in bot10 (the least searched) are found exactly 56 times. This looks like there must be a reason for it.
+
+ (('ZFV', 'EWR', '2013-11-06'), 56),
+ (('PRG', 'XNA', '2014-09-21'), 56),
+ (('MUC', 'PUJ', '2014-02-04'), 56),
+ (('SAN', 'SFO', '2013-11-15'), 56),
+ (('SFO', 'FCO', '2013-11-29'), 56),
+ (('CKG', 'LAX', '2014-01-23'), 56),
+ (('CLO', 'ZRH', '2013-12-10'), 56),
+ (('DUS', 'MIA', '2014-03-14'), 56),
+ (('FRA', 'FTU', '2014-02-13'), 56),
+ (('LHR', 'ARN', '2013-11-02'), 56)]
+
+After some tries, I do find some flights that are matched in both files:
+
+filtr = {('SAN', 'SFO', '2013-11-15'): 13}
+
+The resulting files (all rows of both files related to this flight) are in the folder https://github.com/sbdybot/pyexercise/tree/master/sfosan
+
+The searches file (my hope was to find something that could individually link searches with bookings) is just 56 times the same line repeated. 
+(If you replace the first line by nothing in a text editor the whole file disappears.)
+
+The bookings file for the same flight has 10 rows. Besides the fact that even if the spec says each line is an individual search, 56 is the 'magic number' all scarcely searched flights are searched exactly 56 times. 
+
+Also, all identifiers in the bookings file are identical. So it may not be 10 bookings after all. But even if it were 56 searches for 10 bookings, it is impossible to state which searches ended up in bookings as they are identical.
+
+Another example is:
+
+filtr = {('RUH', 'JED', '2013-01-16'): 7}
+
+It is similar to the previous one but has 627 searches all identical except in the time of the search (there are 11 different times of search in 627 searches) and one variable which can have two values either FCP or CCP. 
+
+This ends up in just 60 bookings which are repetitions of only 5 different rloc codes.
+
+Again, it is impossible to match the (almost identical) searches to either 5 or 60 bookings.
+
+The resulting files are in https://github.com/sbdybot/pyexercise/tree/master/ruhjed
+
+
+Conclusion: At least with the given files, it is not possible to link searches with bookings. It is reasonable to assume that if the files contained enough searches and enough bookings some kind of identifier would be required to match them even if it was a combination of sociodemographic factors or something alike.
+I am aware of algorithms working with incomplete data or defining some kind of heuristic to provide "educated guesses", but in this case, nothing could be done other than blind guessing.
+
