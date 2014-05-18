@@ -58,6 +58,28 @@ class csvContainer:
     
     self.f.seek(stpos)
     errfile.close()
+
+
+  def countlines(self):
+    """ Count lines not counting lines with errors """
+    
+    numcol = len(self.hea)
+    stpos  = self.f.tell()
+    
+    ln = 0
+    li = self.f.readline()
+    while li != '':
+      row = li.rstrip('\n').split('^')
+      
+      if self.auto and len(row) == 1: row = li.rstrip('\n').split(',')
+      
+      if len(row) == numcol: 
+        ln += 1
+      
+      li = self.f.readline()
+    
+    self.f.seek(stpos)
+    return (ln)
     
     
   def niceAirportDescription (self, iatacode):
